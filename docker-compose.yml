@@ -1,0 +1,30 @@
+services:
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: chroma
+    ports:
+      - "${CHROMA_PORT}:${CHROMA_PORT}"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=${CHROMA_PORT}
+      - PERSIST_DIRECTORY=${CHROMA_PERSIST_DIR}
+      - ANONYMIZED_TELEMETRY=FALSE
+    volumes:
+      - chroma_data:${CHROMA_PERSIST_DIR}
+
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: rag-app
+    ports:
+      - "${APP_PORT}:8000"
+    environment:
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=${CHROMA_PORT}
+    depends_on:
+      - chroma
+
+volumes:
+  chroma_data:
