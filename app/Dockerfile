@@ -17,4 +17,4 @@ COPY --from=builder /app/src /app/src
 ENV PATH="/app/.venv/bin:${PATH}"
 
 EXPOSE 8000
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.services.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

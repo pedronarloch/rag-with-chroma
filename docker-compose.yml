@@ -23,6 +23,7 @@ services:
     environment:
       - CHROMA_HOST=chroma
       - CHROMA_PORT=${CHROMA_PORT}
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION}
     depends_on:
       - chroma
 

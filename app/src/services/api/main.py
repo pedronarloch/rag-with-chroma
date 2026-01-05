@@ -1,10 +1,9 @@
 import os
 
-from fastapi import FastAPI, HTTPException
-import dotenv
 import chromadb
+import dotenv
 from chromadb.config import Settings
-
+from fastapi import FastAPI, HTTPException
 
 dotenv.load_dotenv()
 
@@ -12,15 +11,12 @@ app = FastAPI(title="Rag App")
 
 CHROMA_HOST = os.getenv("CHROMA_HOST")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT"))
-COLLECTION_NAME = "demo"
+COLLECTION_NAME = os.getenv("CHROMA_COLLECTION")
 
 
 client = chromadb.HttpClient(
-    host=CHROMA_HOST,
-    port=CHROMA_PORT,
-    settings=Settings(allow_reset=True)
+    host=CHROMA_HOST, port=CHROMA_PORT, settings=Settings(allow_reset=True)
 )
-
 
 
 @app.get("/health")
@@ -30,6 +26,7 @@ def health():
         return {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
+
 
 @app.post("/init")
 def init():
@@ -43,15 +40,7 @@ def init():
             "LlamaIndex streamlines RAG pipelines.",
             "RAG retrieves relevant chunks to ground LLM response.",
         ],
-        metadatas=[{"src": "chroma"}, {"src": "llamaindex"}, {"src": "rag"}]
+        metadatas=[{"src": "chroma"}, {"src": "llamaindex"}, {"src": "rag"}],
     )
 
     return {"ok": True}
-
-
-@app.get("/search")
-def search(q: str, n: int=3):
-    col = client.get_or_create_collection(COLLECTION_NAME)
-    res = col.query(query_texts=[q], n_results=n)
-
-    return res
