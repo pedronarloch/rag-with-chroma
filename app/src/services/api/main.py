@@ -1,46 +1,14 @@
-import os
+from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
-import chromadb
-import dotenv
-from chromadb.config import Settings
-from fastapi import FastAPI, HTTPException
+from .router import api_router
 
-dotenv.load_dotenv()
-
-app = FastAPI(title="Rag App")
-
-CHROMA_HOST = os.getenv("CHROMA_HOST")
-CHROMA_PORT = int(os.getenv("CHROMA_PORT"))
-COLLECTION_NAME = os.getenv("CHROMA_COLLECTION")
+app = FastAPI(title="Augmented Personal Finance Assistant Service")
 
 
-client = chromadb.HttpClient(
-    host=CHROMA_HOST, port=CHROMA_PORT, settings=Settings(allow_reset=True)
-)
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 
-@app.get("/health")
-def health():
-    try:
-        client.heartbeat()
-        return {"status": "ok"}
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=str(e))
-
-
-@app.post("/init")
-def init():
-    if any(c.name == COLLECTION_NAME for c in client.list_collections()):
-        client.delete_collection(COLLECTION_NAME)
-    col = client.create_collection(COLLECTION_NAME)
-    col.add(
-        ids=["1", "2", "3"],
-        documents=[
-            "Chroma is a simple, open-source vector database.",
-            "LlamaIndex streamlines RAG pipelines.",
-            "RAG retrieves relevant chunks to ground LLM response.",
-        ],
-        metadatas=[{"src": "chroma"}, {"src": "llamaindex"}, {"src": "rag"}],
-    )
-
-    return {"ok": True}
+app.include_router(api_router)

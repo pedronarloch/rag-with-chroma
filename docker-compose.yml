@@ -13,19 +13,29 @@ services:
     volumes:
       - chroma_data:${CHROMA_PERSIST_DIR}
 
-  app:
+  api:
     build:
       context: .
-      dockerfile: app/Dockerfile
-    container_name: rag-app
+      dockerfile: app/src/services/api/Dockerfile
+    container_name: rag-api
     ports:
-      - "${APP_PORT}:8000"
+      - "${API_PORT}:8000"
     environment:
       - CHROMA_HOST=chroma
       - CHROMA_PORT=${CHROMA_PORT}
       - CHROMA_COLLECTION=${CHROMA_COLLECTION}
     depends_on:
       - chroma
+  
+  streamlit-dashboard:
+    build:
+      context: .
+      dockerfile: app/src/services/ui/Dockerfile
+    container_name: streamlit-dashboard
+    ports:
+      - "${DASHBOARD_PORT}:8000"
+    depends_on:
+      - api
 
 volumes:
   chroma_data:
